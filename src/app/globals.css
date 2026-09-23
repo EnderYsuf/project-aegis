@@ -1,16 +1,17 @@
 /* reset */
 * {
-    padding: 0;
-    margin: 0;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
 }
 
 /* variables */
 :root {
-    /* background */
+  /* background */
   --bg-canvas: #0d0b0e;
   --bg-card: #1a1115;
   --bg-card-hover: #24181e;
-    /* borders */
+  /* borders */
   --border-subtle: #2e1a22;
   --border-accent: #e63946;
 
@@ -89,6 +90,15 @@ body {
   align-items: center;
   min-height: 300px;
   padding: 2rem;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  opacity: 1;
+  visibility: visible;
+}
+
+.upload-wrapper.hidden {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
 }
 
 .file-upload {
@@ -165,4 +175,56 @@ body {
   font-size: 0.85rem;
   color: var(--text-muted, #94a3b8);
   letter-spacing: 0.5px;
+}
+
+/* ai actions window - Centered at the bottom */
+.ai-actions-window {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 85%;
+  max-width: 800px;
+  height: 30%;
+  max-height: 250px;
+  padding: 1.25rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.6);
+}
+
+.ai-actions-window.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ai-actions-header {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--border-subtle);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.ai-logs-container {
+  flex: 1;
+  overflow-y: hidden;
+  font-family: monospace;
+  font-size: 0.95rem;
+  color: var(--accent-neon);
+  white-space: pre-wrap;
+  scroll-behavior: smooth;
+}
+
+.ai-log-entry {
+  margin-bottom: 0.25rem;
 }
