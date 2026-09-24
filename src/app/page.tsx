@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, ChangeEvent, DragEvent } from "react";
+import Image from "next/image";
 
 const AI_THINKING_QUOTES = [
   "thinking...",
@@ -12,14 +13,30 @@ const AI_THINKING_QUOTES = [
   "Uuu, what is this? Is that thinking?",
 ];
 
+const SLOGANS = [
+  "See what diseases your network is affected by",
+  "Diagnose your packet captures before they flatline",
+  "Exposing silent network anomalies in real-time",
+  "Deep packet analysis with surgical precision",
+  "Uncover hidden infections in your digital arteries",
+  "Isolate rogue traffic before it spreads",
+];
+
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [aiLogs, setAiLogs] = useState<string[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
+  const [currentSlogan, setCurrentSlogan] = useState<string>("");
 
   const logsEndRef = useRef<HTMLDivElement | null>(null);
+
+  // pick a random slogan on page load
+  useEffect(() => {
+    const randomSlogan = SLOGANS[Math.floor(Math.random() * SLOGANS.length)];
+    setCurrentSlogan(randomSlogan);
+  }, []);
 
   // auto scroll
   useEffect(() => {
@@ -90,6 +107,27 @@ export default function Home() {
 
   return (
     <>
+      <div className="top-bar">
+        <div className="brand-wrapper">
+          <div className="logo-container">
+            <Image
+              src="/logo.png"
+              alt="logo"
+              width={36}
+              height={36}
+              className="logo-image"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div className="hero-section">
+        <div className="slogan-badge">AI Diagnostic Engine</div>
+        <div className="slogan">
+          <p>{currentSlogan}</p>
+        </div>
+      </div>
+
       <div className={`upload-wrapper ${isThinking ? "hidden" : ""}`}>
         <label
           className={`file-upload ${isDragOver ? "dragover" : ""}`}
@@ -120,7 +158,9 @@ export default function Home() {
           <div className="upload-title">
             Drag & drop files or <span>Browse</span>
           </div>
-          <div className="upload-hint">Supports packet capture files (.pcap)</div>
+          <div className="upload-hint">
+            Supports packet capture files (.pcap)
+          </div>
         </label>
       </div>
 
