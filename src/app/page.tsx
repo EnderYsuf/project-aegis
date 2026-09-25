@@ -27,6 +27,14 @@ interface FaqItem {
   answer: string;
 }
 
+interface AnalysisResult {
+  fileName: string;
+  totalPackets: number;
+  duration: string;
+  threatLevel: "Clean" | "Warning" | "Critical";
+  detectedAnomalies: { id: string; type: string; severity: "Low" | "Medium" | "High"; detail: string }[];
+}
+
 const FAQ_DATA: FaqItem[] = [
   {
     question: "What is a PCAP file and how is it analyzed?",
@@ -54,6 +62,8 @@ export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
+  const [isFinished, setIsFinished] = useState(false);
+  const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [aiLogs, setAiLogs] = useState<string[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [currentSlogan, setCurrentSlogan] = useState<string>("");
@@ -77,8 +87,44 @@ export default function Home() {
   // file input
   const handleFileSelect = (file: File) => {
     setSelectedFile(file);
+    setIsFinished(false);
+    setAnalysisResult(null);
+    setAiLogs([]);
+    setElapsedSeconds(0);
     console.log(`File added: ${file.name}`);
     startAiProcess();
+  };
+
+  // result display
+  const resultShow = () => {
+    setIsThinking(false);
+    setIsFinished(true);
+    setAnalysisResult({
+      fileName: selectedFile?.name || "network_capture.pcap",
+      totalPackets: 142850,
+      duration: "00:14:32",
+      threatLevel: "Critical",
+      detectedAnomalies: [
+        {
+          id: "ANOM-01",
+          type: "DNS Tunneling",
+          severity: "High",
+          detail: "High-frequency TXT requests detected targeting external host (185.220.101.4).",
+        },
+        {
+          id: "ANOM-02",
+          type: "TCP SYN Flood",
+          severity: "High",
+          detail: "4,200 incomplete TCP handshakes targeted at internal server 10.0.4.12:80.",
+        },
+        {
+          id: "ANOM-03",
+          type: "Cleartext Transmission",
+          severity: "Medium",
+          detail: "HTTP POST payload contains unencrypted credentials on port 8080.",
+        },
+      ],
+    });
   };
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -108,11 +154,26 @@ export default function Home() {
   const startAiProcess = () => {
     setTimeout(() => {
       setIsThinking(true);
+      endAiProcess();
     }, 2000);
+  };
+
+  const endAiProcess = () => {
+    const randomTime = Math.random() * 4000 + 3000;
+    setTimeout(() => {
+      resultShow();
+    }, randomTime);
   };
 
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+
+  const handleReset = () => {
+    setSelectedFile(null);
+    setIsThinking(false);
+    setIsFinished(false);
+    setAnalysisResult(null);
   };
 
   // timer
@@ -123,7 +184,6 @@ export default function Home() {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
 
-    // some quotes
     const quoteInterval = setInterval(() => {
       const randomQuote =
         AI_THINKING_QUOTES[
@@ -161,7 +221,61 @@ export default function Home() {
         </div>
       </div>
 
-      <div className={`upload-wrapper ${isThinking ? "hidden" : ""}`}>
+      {/* 1. Results Display Area placed BEFORE Upload Wrapper */}
+      {isFinished && analysisResult && (
+        <div className="result-wrapper">
+          <div className="result-card">
+            <div className="result-header">
+              <div>
+                <h3 className="result-title">Diagnostic Report</h3>
+                <p className="result-filename">{analysisResult.fileName}</p>
+              </div>
+              <span className={`badge-alert ${analysisResult.threatLevel.toLowerCase()}`}>
+                {analysisResult.threatLevel} Threat Level
+              </span>
+            </div>
+
+            <div className="result-metrics">
+              <div className="metric-box">
+                <span className="metric-label">Total Packets</span>
+                <span className="metric-value">{analysisResult.totalPackets.toLocaleString()}</span>
+              </div>
+              <div className="metric-box">
+                <span className="metric-label">Capture Duration</span>
+                <span className="metric-value">{analysisResult.duration}</span>
+              </div>
+              <div className="metric-box">
+                <span className="metric-label">Anomalies Detected</span>
+                <span className="metric-value text-neon">{analysisResult.detectedAnomalies.length}</span>
+              </div>
+            </div>
+
+            <div className="anomalies-section">
+              <h4>Detected Security Anomalies</h4>
+              <div className="anomalies-list">
+                {analysisResult.detectedAnomalies.map((item) => (
+                  <div key={item.id} className="anomaly-item">
+                    <div className="anomaly-header">
+                      <span className="anomaly-type">{item.type}</span>
+                      <span className={`severity-badge ${item.severity.toLowerCase()}`}>
+                        {item.severity}
+                      </span>
+                    </div>
+                    <p className="anomaly-detail">{item.detail}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <button className="btn-primary reset-btn" onClick={handleReset}>
+              Analyze Another PCAP File
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* 2. File Upload Wrapper */}
+      <div className={`upload-wrapper ${isThinking || isFinished ? "hidden" : ""}`}>
         <label
           className={`file-upload ${isDragOver ? "dragover" : ""}`}
           onDragOver={handleDragOver}
@@ -197,7 +311,8 @@ export default function Home() {
         </label>
       </div>
 
-      <div className={`faq-wrapper ${isThinking ? "hidden" : ""}`}>
+      {/* 3. FAQ Section */}
+      <div className={`faq-wrapper ${isThinking || isFinished ? "hidden" : ""}`}>
         <h2 className="faq-title">Frequently Asked Questions</h2>
         <div className="faq-list">
           {FAQ_DATA.map((item, index) => {
@@ -232,6 +347,7 @@ export default function Home() {
         </div>
       </div>
 
+      {/* 4. AI Thinking Terminal */}
       <div className={`ai-actions-window ${isThinking ? "show" : ""}`}>
         <div className="ai-actions-header">
           Thinking... ({elapsedSeconds} seconds)
