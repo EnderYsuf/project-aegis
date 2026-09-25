@@ -22,6 +22,34 @@ const SLOGANS = [
   "Isolate rogue traffic before it spreads",
 ];
 
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+const FAQ_DATA: FaqItem[] = [
+  {
+    question: "What is a PCAP file and how is it analyzed?",
+    answer:
+      "A PCAP (Packet Capture) file contains network data logs recorded over time. Our AI engine parses the raw packet payloads, protocols, and metadata to identify anomalies, latency spikes, and malicious security threats.",
+  },
+  {
+    question: "Are my uploaded packet captures stored permanently?",
+    answer:
+      "No. Uploaded PCAP files are processed in an isolated, secure memory buffer and automatically deleted once your diagnostic session ends. We do not store or train public models on your proprietary traffic data.",
+  },
+  {
+    question: "What is the maximum file size supported?",
+    answer:
+      "Currently, the web interface supports direct uploads of up to 100 MB per PCAP file. For larger capture files, consider slicing the capture with tshark or Wireshark prior to uploading.",
+  },
+  {
+    question: "What types of network issues can the AI detect?",
+    answer:
+      "The diagnostic engine scans for suspicious TCP handshakes, port scanning activities, cleartext password leaks, DNS tunneling, unusual bandwidth hogs, and fragmented packet patterns.",
+  },
+];
+
 export default function Home() {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
@@ -29,6 +57,7 @@ export default function Home() {
   const [aiLogs, setAiLogs] = useState<string[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [currentSlogan, setCurrentSlogan] = useState<string>("");
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const logsEndRef = useRef<HTMLDivElement | null>(null);
 
@@ -82,6 +111,10 @@ export default function Home() {
     }, 2000);
   };
 
+  const toggleFaq = (index: number) => {
+    setOpenFaqIndex(openFaqIndex === index ? null : index);
+  };
+
   // timer
   useEffect(() => {
     if (!isThinking) return;
@@ -122,7 +155,7 @@ export default function Home() {
       </div>
 
       <div className="hero-section">
-        <div className="slogan-badge">AI Diagnostic Engine</div>
+        <div className="slogan-badge">AI PCAP Diagnostic Engine</div>
         <div className="slogan">
           <p>{currentSlogan}</p>
         </div>
@@ -162,6 +195,41 @@ export default function Home() {
             Supports packet capture files (.pcap)
           </div>
         </label>
+      </div>
+
+      <div className={`faq-wrapper ${isThinking ? "hidden" : ""}`}>
+        <h2 className="faq-title">Frequently Asked Questions</h2>
+        <div className="faq-list">
+          {FAQ_DATA.map((item, index) => {
+            const isOpen = openFaqIndex === index;
+            return (
+              <div
+                key={index}
+                className={`faq-item ${isOpen ? "open" : ""}`}
+                onClick={() => toggleFaq(index)}
+              >
+                <div className="faq-question">
+                  <span>{item.question}</span>
+                  <svg
+                    className="faq-icon"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+                {isOpen && <div className="faq-answer">{item.answer}</div>}
+              </div>
+            );
+          })}
+        </div>
       </div>
 
       <div className={`ai-actions-window ${isThinking ? "show" : ""}`}>
