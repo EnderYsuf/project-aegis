@@ -39,3 +39,16 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+/.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Packet captures
+*.pcap
+*.pcapng
+
+# Safe demo file
+!backend/samples/demo.pcap

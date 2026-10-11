@@ -59,24 +59,26 @@ const FAQ_DATA: FaqItem[] = [
 ];
 
 export default function Home() {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isThinking, setIsThinking] = useState(false);
   const [isFinished, setIsFinished] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [aiLogs, setAiLogs] = useState<string[]>([]);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
-  const [currentSlogan, setCurrentSlogan] = useState<string>("");
+  const [currentSlogan, setCurrentSlogan] = useState<string>(SLOGANS[0]);
   const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   const logsEndRef = useRef<HTMLDivElement | null>(null);
 
   // pick a random slogan on page load
-  useEffect(() => {
-    const randomSlogan = SLOGANS[Math.floor(Math.random() * SLOGANS.length)];
-    setCurrentSlogan(randomSlogan);
-  }, []);
+ useEffect(() => {
+    const timer = window.setTimeout(() => {
+      const randomSlogan = SLOGANS[Math.floor(Math.random() * SLOGANS.length)];
+      setCurrentSlogan(randomSlogan);
+    }, 0);
 
+    return () => window.clearTimeout(timer);
+}, []);
   // auto scroll
   useEffect(() => {
     if (logsEndRef.current) {
@@ -85,48 +87,39 @@ export default function Home() {
   }, [aiLogs]);
 
   // file input
-  const handleFileSelect = (file: File) => {
-    setSelectedFile(file);
+  const handleFileSelect = async (file: File) => {
     setIsFinished(false);
     setAnalysisResult(null);
     setAiLogs([]);
     setElapsedSeconds(0);
-    console.log(`File added: ${file.name}`);
-    startAiProcess();
-  };
+    setIsThinking(true);
 
-  // result display
-  const resultShow = () => {
-    setIsThinking(false);
-    setIsFinished(true);
-    setAnalysisResult({
-      fileName: selectedFile?.name || "network_capture.pcap",
-      totalPackets: 142850,
-      duration: "00:14:32",
-      threatLevel: "Critical",
-      detectedAnomalies: [
-        {
-          id: "ANOM-01",
-          type: "DNS Tunneling",
-          severity: "High",
-          detail: "High-frequency TXT requests detected targeting external host (185.220.101.4).",
-        },
-        {
-          id: "ANOM-02",
-          type: "TCP SYN Flood",
-          severity: "High",
-          detail: "4,200 incomplete TCP handshakes targeted at internal server 10.0.4.12:80.",
-        },
-        {
-          id: "ANOM-03",
-          type: "Cleartext Transmission",
-          severity: "Medium",
-          detail: "HTTP POST payload contains unencrypted credentials on port 8080.",
-        },
-      ],
+  try {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    const response = await fetch("http://127.0.0.1:8000/analyze", {
+      method: "POST",
+      body: formData,
     });
-  };
 
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail || "Analysis failed");
+    }
+
+    const result: AnalysisResult = await response.json();
+
+    setAnalysisResult(result);
+    setIsFinished(true);
+
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Unknown error";
+    alert(`Analysis failed: ${message}`);
+  } finally {
+    setIsThinking(false);
+  }
+};
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       handleFileSelect(e.target.files[0]);
@@ -151,26 +144,11 @@ export default function Home() {
     }
   };
 
-  const startAiProcess = () => {
-    setTimeout(() => {
-      setIsThinking(true);
-      endAiProcess();
-    }, 2000);
-  };
-
-  const endAiProcess = () => {
-    const randomTime = Math.random() * 4000 + 3000;
-    setTimeout(() => {
-      resultShow();
-    }, randomTime);
-  };
-
   const toggleFaq = (index: number) => {
     setOpenFaqIndex(openFaqIndex === index ? null : index);
   };
 
   const handleReset = () => {
-    setSelectedFile(null);
     setIsThinking(false);
     setIsFinished(false);
     setAnalysisResult(null);
@@ -284,7 +262,7 @@ export default function Home() {
         >
           <input
             type="file"
-            accept=".pcap"
+            accept=".pcap,.pcapng" /*Тут принимался только .pcap, я добавил .pcapng  */
             id="fileInput"
             onChange={handleInputChange}
           />
@@ -306,7 +284,7 @@ export default function Home() {
             Drag & drop files or <span>Browse</span>
           </div>
           <div className="upload-hint">
-            Supports packet capture files (.pcap)
+            Supports packet capture files (.pcap, .pcapng)
           </div>
         </label>
       </div>
