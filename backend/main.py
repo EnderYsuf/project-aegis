@@ -1,5 +1,3 @@
-"""Project Aegis: small local HTTP API for PCAP analysis."""
-
 import asyncio
 import logging
 import tempfile
@@ -13,7 +11,7 @@ from .detector import analyze
 
 app = FastAPI(title="Project Aegis API", version="0.1.0")
 
-# The frontend runs separately on port 3000 during development.
+# separated frontend and backend for development purposes
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
@@ -21,11 +19,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MiB
-CHUNK_SIZE = 1024 * 1024  # Read up to 1 MiB into memory at a time
+MAX_FILE_SIZE = 100 * 1024 * 1024  # 100 MB
+CHUNK_SIZE = 1024 * 1024  # read up to 1 MB into memory at a time
 
-# PCAP supports both byte orders and microsecond/nanosecond timestamps.
-# PCAPNG starts with its own section-header magic.
 PCAP_MAGICS = {
     b"\xd4\xc3\xb2\xa1",
     b"\xa1\xb2\xc3\xd4",
@@ -40,7 +36,7 @@ analysis_lock = asyncio.Lock()
 
 async def limit_analyses():
     if analysis_lock.locked():
-        raise HTTPException(status_code=429,detail="Another analysis is already running")
+        raise HTTPException(status_code=429, detail="Another analysis is already running")
 
     async with analysis_lock:
         yield
@@ -63,7 +59,7 @@ async def analyze_file(
     size = 0
 
     try:
-        # Temporary copy exists only for this request and is always deleted.
+        # temp copy exists only for request
         with tempfile.NamedTemporaryFile(mode="wb", suffix=Path(filename).suffix, delete=False) as temp:
             temp_path = Path(temp.name)
 
@@ -80,21 +76,30 @@ async def analyze_file(
         if size == 0:
             raise HTTPException(status_code=400, detail="File is empty")
 
-        # The existing detector works with a file path and returns a dict.
+        # returning dict
         raw = await run_in_threadpool(analyze, str(temp_path))
 
-        # Convert snake_case detector fields into the frontend's format.
-        levels = {"None": "Clean", "Low": "Warning", "Medium": "Warning", "Critical": "Critical"}
+        # converting to frontend format
+        levels = {
+            "None": "Clean",
+            "Low": "Warning",
+            "Medium": "Warning",
+            "High": "Critical",
+            "Critical": "Critical"
+        }
+
         return {
             "fileName": filename,
             "totalPackets": raw["total_packets"],
             "duration": raw["duration"],
-            "threatLevel": levels.get(raw["threat_level"], "Warning"),
+            "totalAnomalyScore": raw["total_anomaly_score"],
+            "threatLevel": levels.get(raw["overall_threat_level"], "Warning"),
             "detectedAnomalies": [
                 {
                     "id": item["id"],
                     "type": item["type"],
                     "severity": item["severity"],
+                    "score": item["score"],
                     "detail": item["description"],
                 }
                 for item in raw["anomalies"]
