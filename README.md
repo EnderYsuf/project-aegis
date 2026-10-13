@@ -1,5 +1,15 @@
 # Project Aegis
 
+## Contents
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Technology Stack](#technology-stack)
+- [Getting Started](#getting-started)
+- [How It Works](#how-it-works)
+- [Detected Anomalies](#detected-anomalies)
+- [API Endpoints](#api-endpoints)
+
+## Overview
 Project Aegis is a web application designed for network security analysis. It provides a user-friendly interface to upload and analyze packet capture (`.pcap`, `.pcapng`) files, identifying potential security threats and anomalies using a rule-based detection engine.
 
 The application consists of a Next.js frontend and a FastAPI backend, which work together to deliver a seamless analysis experience. Users can upload a capture file and the system provides a detailed diagnostic report, including an overall threat level, a list of detected anomalies with severity scores, and key metrics about the capture.
