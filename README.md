@@ -115,3 +115,8 @@ pip install -r backend\requirements-dev.txt
 
 # Run tests
 pytest backend/tests -v
+```
+
+## Authors
+- Nechaev Yusuf ([EnderYsuf](https://github.com/EnderYsuf)) - frontend, analysis engine, corrections
+- Musaibov Alisher ([musalisher](https://github.com/musalisher)) - backend, testing
