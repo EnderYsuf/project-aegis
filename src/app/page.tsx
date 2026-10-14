@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, ChangeEvent, DragEvent } from "react";
 import Image from "next/image";
-
-const AI_THINKING_QUOTES = [
+// placeholder in case something
+/*const AI_THINKING_QUOTES = [
   "thinking...",
   "Thinking more...",
   "Thinking even more...",
@@ -11,7 +11,10 @@ const AI_THINKING_QUOTES = [
   "Ooh, I'm soo thinking",
   "I'm AI and I think",
   "Uuu, what is this? Is that thinking?",
-];
+];*/
+const AI_THINKING_QUOTES = [
+  ""
+]
 
 const SLOGANS = [
   "See what diseases your network is affected by",
@@ -199,7 +202,6 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 1. Results Display Area placed BEFORE Upload Wrapper */}
       {isFinished && analysisResult && (
         <div className="result-wrapper">
           <div className="result-card">
@@ -252,7 +254,7 @@ export default function Home() {
         </div>
       )}
 
-      {/* 2. File Upload Wrapper */}
+      {/* file upload */}
       <div className={`upload-wrapper ${isThinking || isFinished ? "hidden" : ""}`}>
         <label
           className={`file-upload ${isDragOver ? "dragover" : ""}`}
@@ -289,7 +291,7 @@ export default function Home() {
         </label>
       </div>
 
-      {/* 3. FAQ Section */}
+      {/* faq */}
       <div className={`faq-wrapper ${isThinking || isFinished ? "hidden" : ""}`}>
         <h2 className="faq-title">Frequently Asked Questions</h2>
         <div className="faq-list">
@@ -325,10 +327,10 @@ export default function Home() {
         </div>
       </div>
 
-      {/* 4. AI Thinking Terminal */}
+      {/* unused */}
       <div className={`ai-actions-window ${isThinking ? "show" : ""}`}>
         <div className="ai-actions-header">
-          Thinking... ({elapsedSeconds} seconds)
+          Working... ({elapsedSeconds} seconds)
         </div>
         <div className="ai-logs-container">
           {aiLogs.map((quote, index) => (
