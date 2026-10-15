@@ -42,7 +42,7 @@ const FAQ_DATA: FaqItem[] = [
   {
     question: "What is a PCAP file and how is it analyzed?",
     answer:
-      "A PCAP (Packet Capture) file contains network data logs recorded over time. Our AI engine parses the raw packet payloads, protocols, and metadata to identify anomalies, latency spikes, and malicious security threats.",
+      "A PCAP (Packet Capture) file contains network data logs recorded over time. Our PCAP diagnostic engine parses the raw packet payloads, protocols, and metadata to identify anomalies, latency spikes, and malicious security threats.",
   },
   {
     question: "Are my uploaded packet captures stored permanently?",
@@ -55,7 +55,7 @@ const FAQ_DATA: FaqItem[] = [
       "Currently, the web interface supports direct uploads of up to 100 MB per PCAP file. For larger capture files, consider slicing the capture with tshark or Wireshark prior to uploading.",
   },
   {
-    question: "What types of network issues can the AI detect?",
+    question: "What types of network issues can the PCAP diagnostic engine detect?",
     answer:
       "The diagnostic engine scans for suspicious TCP handshakes, port scanning activities, cleartext password leaks, DNS tunneling, unusual bandwidth hogs, and fragmented packet patterns.",
   },
@@ -164,18 +164,18 @@ export default function Home() {
     const timerInterval = setInterval(() => {
       setElapsedSeconds((prev) => prev + 1);
     }, 1000);
-
+    {/* unused
     const quoteInterval = setInterval(() => {
       const randomQuote =
         AI_THINKING_QUOTES[
           Math.floor(Math.random() * AI_THINKING_QUOTES.length)
         ];
       setAiLogs((prev) => [...prev, randomQuote]);
-    }, 1000);
+    }, 1000); */}
 
     return () => {
       clearInterval(timerInterval);
-      clearInterval(quoteInterval);
+      // clearInterval(quoteInterval);
     };
   }, [isThinking]);
 
@@ -196,7 +196,7 @@ export default function Home() {
       </div>
 
       <div className="hero-section">
-        <div className="slogan-badge">AI PCAP Diagnostic Engine</div>
+        <div className="slogan-badge">PCAP Diagnostic Engine</div>
         <div className="slogan">
           <p>{currentSlogan}</p>
         </div>
